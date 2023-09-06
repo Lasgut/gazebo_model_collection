@@ -1,0 +1,30 @@
+<launch>
+  <!-- Start Gazebo with the default empty world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="paused" value="false" />
+    <arg name="gui" value="true" />
+    <arg name="verbose" value="true"/>
+  </include>
+
+  <!-- Load URDF description into the parameter server -->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find gazebo_model_collection)/urdf/robot_arm/robot_arm_4DOF.xacro'" />
+
+  <rosparam file="$(find gazebo_model_collection)/config/rrbot_config.yaml" command="load"/>
+
+  <!-- Spawn the URDF model in Gazebo -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -model robot_arm_DOF4 -param robot_description" /> 
+
+  <!-- load the controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" ns="/robot_arm_DOF4" 
+    args="joint_state_controller 
+    joint1_controller joint2_controller
+    joint3_controller joint4_controller
+    joint51_controller joint52_controller"/>
+
+  <!-- Combine joint values and publish the TF -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+</launch>
+
